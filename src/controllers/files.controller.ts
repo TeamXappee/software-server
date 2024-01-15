@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { parseXlsxToJson } from "../helpers/fileUpload.helpers";
-import { saveOrdersAndFilesMetadata } from "../services/fileUpload.service";
+import {  retrieveAllFiles,
+  saveOrdersAndFilesMetadata,
+} from "../services/files.service";
 
 export async function uploadFiles(req: Request, res: Response) {
   const files = req.files as Express.Multer.File[];
@@ -17,9 +19,24 @@ export async function uploadFiles(req: Request, res: Response) {
       message: "Files processed successfully.",
       data: JSON.stringify(results),
     });
-  } catch (error) {
+  } catch (error: any) {
     res.status(500).json({
       message: "Error converting excell files to data",
+      error: error.message,
+    });
+  }
+}
+
+export async function getAllUploadedFiles(_req: Request, res: Response) {
+  try {
+    const files = await retrieveAllFiles();
+    res.status(200).json({
+      message: "Files retrieved successfully",
+      data: files,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      message: "Error retrieving files",
       error: error.message,
     });
   }

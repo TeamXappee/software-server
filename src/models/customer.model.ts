@@ -1,23 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface ICustomer extends Document {
+export interface IChannel extends Document {
   name: string;
-  email: string;
-  selrouserid: number;
-  city?: string;
-  firstname?: string;
-  lastname?: string;
-  state?: string;
+  channel: string;
 }
 
-const customerSchema: Schema = new Schema({
+const channelSchema: Schema = new Schema({
   name: String,
-  email: String,
-  selrouserid: Number,
-  city: { type: String, required: false },
-  firstname: { type: String, required: false },
-  lastname: { type: String, required: false },
-  state: { type: String, required: false },
+  channel: String,
 });
 
-export const Customer = mongoose.model<ICustomer>("Customer", customerSchema);
+export const Channel = mongoose.model<IChannel>("Channel", channelSchema);

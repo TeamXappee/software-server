@@ -1,8 +1,14 @@
 import express from "express";
-import fileUploadRouter from "./fileUpload.route";
+import filesRouter from "./filesroute";
+import ordersRouter from "./order.route";
 
 const router = express.Router();
 
-router.use("/file", fileUploadRouter);
+router.get("/check-health", (req, res) => {
+  res.status(200).json({ message: "Server is up and running" });
+});
+
+router.use("/files", filesRouter);
+router.use("/orders", ordersRouter);
 
 export default router;

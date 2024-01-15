@@ -16,7 +16,7 @@ const parseFile = (file: Express.Multer.File): Promise<any> => {
       const rowsData = xlsx.utils.sheet_to_json(worksheet) as TOrderData[];
 
       resolve({
-        file: {
+        metadata: {
           originalname: file.originalname,
           mimetype: file.mimetype,
           size: file.size,

@@ -1,10 +1,14 @@
+export type TOrder = {
+  file_id: string;
+  data: TOrderData;
+};
 export type TOrderData = {
   BUYER_EMAIL: string;
   BUYER_NAME: string;
   CHANNEL: string;
   CHANNEL_NAME: string;
   CURRENCY_CODE: string;
-  EAN: number;
+  EAN: any;
   ITEM_PRICE: number;
   ITEM_TAX: number;
   ORDER_DATE: number;
