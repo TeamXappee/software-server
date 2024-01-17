@@ -35,7 +35,7 @@ export const saveOrdersAndFilesMetadata = async (files: TFile) => {
         channelName: file.rows[0].CHANNEL_NAME,
       });
       await saveOrders(
-        file.rows.slice(0,15).map((order) => ({ data: order, file_id: savedFile._id }))
+        file.rows.map((order) => ({ data: order, file_id: savedFile._id }))
       );
     }
   } catch (error) {
