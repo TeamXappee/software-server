@@ -9,8 +9,7 @@ const parseFile = (file: Express.Multer.File): Promise<any> => {
       const workbook = xlsx.read(file.buffer, { type: "buffer" });
 
       // Read the first sheet
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
+      const worksheet = workbook.Sheets["DETAILS"];
 
       // Convert sheet to JSON
       const rowsData = xlsx.utils.sheet_to_json(worksheet) as TOrderData[];
