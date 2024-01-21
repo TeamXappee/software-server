@@ -1,18 +1,19 @@
 import { Request, Response } from "express";
 import { parseXlsxToJson } from "../helpers/fileUpload.helpers";
-import {  retrieveAllFiles,
+import {
+  retrieveAllFiles,
   saveOrdersAndFilesMetadata,
 } from "../services/files.service";
 
 export async function uploadFiles(req: Request, res: Response) {
-  const files = req.files as Express.Multer.File[];
-
-  if (!files || files.length === 0) {
-    res.status(400).json({ message: "No files uploaded" });
-    return;
-  }
-
   try {
+    const files = req.files as Express.Multer.File[]; // Array of files uploaded
+    const metadata = JSON.parse(req.body.metadata); // Parse the metadata
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+    
     const results = await parseXlsxToJson(files);
     await saveOrdersAndFilesMetadata(results);
     res.status(200).json({
