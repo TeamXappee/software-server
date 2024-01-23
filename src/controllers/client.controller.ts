@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 
 export const addNewClient = async (req: Request, res: Response) => {
   const client = req.body;
-  console.log(client);
   res.status(200).json({ message: "Client added successfully" });
 };
 

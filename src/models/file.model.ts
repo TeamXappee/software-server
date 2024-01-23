@@ -1,26 +1,26 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export type TFile = {
-  name: string;
-  user_id: string;
-  client_id: string;
+  fileName: string;
+  user_email: string;
+  client_id?: string;
   size: number;
-  sheets: string[];
+  notes?: string;
 };
 interface IFile extends Document {
-  name: string;
-  user_id: string;
-  client_id: string;
+  fileName: string;
+  user_email: string;
+  client_id?: string;
   size: number;
-  sheets: string[];
+  notes?: string;
 }
 
 const fileSchema: Schema = new Schema({
-  name: { type: String, required: true },
-  user_id: { type: String, required: true },
-  client_id: { type: String, required: true },
+  fileName: { type: String, required: true },
+  user_email: { type: String, required: true },
+  client_id: { type: String, required: false },
   size: { type: String, required: true },
-  sheets: { type: String, required: true },
+  notes: { type: String, required: false },
 });
 
 export const File = mongoose.model<IFile>("File", fileSchema);

@@ -12,7 +12,7 @@ const saveFile = async (file: TFile) => {
   }
 };
 
-const saveOrderDetails = async (orders: TOrderDetails[]) => {
+const saveOrderDetails = async (orders: any) => {
   try {
     await Order.insertMany(orders);
   } catch (err: any) {
@@ -20,7 +20,32 @@ const saveOrderDetails = async (orders: TOrderDetails[]) => {
   }
 };
 
+export const saveNewFileData = async (
+  metadata: any,
+  orders: TOrderDetails[]
+) => {
+  try {
+    const file = await saveFile({
+      user_email: metadata.user_email,
+      fileName: metadata.fileName,
+      size: metadata.size,
+    });
 
-export const saveUploadEntry = async (file: TFile, orders: TOrderDetails[]) => {
+    if (file) {
+      await saveOrderDetails(
+        orders.map((order) => ({ file_id: file._id, ...order }))
+      );
+    }
+  } catch (err) {
+    handleError(err);
+  }
+};
 
-}
+export const fetchAllfiles = async (user_email: string) => {
+  try {
+    console.log(user_email, "user_emadddil");
+    return await File.find({ user_email: String(user_email) });
+  } catch (err) {
+    handleError(err);
+  }
+};
