@@ -29,6 +29,7 @@ export const saveNewFileData = async (
       user_email: metadata.user_email,
       fileName: metadata.fileName,
       size: metadata.size,
+      client_id: metadata.client_id,
     });
 
     if (file) {
@@ -41,10 +42,21 @@ export const saveNewFileData = async (
   }
 };
 
-export const fetchAllfiles = async (user_email: string) => {
+export const fetchfilesByUserEmail = async (user_email: string) => {
   try {
     console.log(user_email, "user_emadddil");
     return await File.find({ user_email: String(user_email) });
+  } catch (err) {
+    handleError(err);
+  }
+};
+
+export const fetchFilesByClientId = async (client_id: string) => {
+  try {
+    const files = await File.find({ client_id });
+    console.log(files, "client_id");
+
+    return files;
   } catch (err) {
     handleError(err);
   }

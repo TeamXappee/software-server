@@ -6,7 +6,8 @@ const filesRouter = express.Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-filesRouter.post("/upload", upload.array("files"), uploadFiles);
-filesRouter.get("/all/:user_email", getAllFiles)
+filesRouter.post("/upload", upload.single("file"), uploadFiles);
+filesRouter.get("/all", getAllFiles);
+
 
 export default filesRouter;

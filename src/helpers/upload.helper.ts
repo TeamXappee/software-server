@@ -1,40 +1,44 @@
 import * as xlsx from "xlsx";
 
+const sheetNames = ["DETAILS", "CHARGES", "OFA POSTCODE"];
+
 // Asynchronous function to parse a single file
-const parseFile = (file: Express.Multer.File): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    try {
-      const workbook = xlsx.read(file.buffer, { type: "buffer" });
-      const worksheet = workbook.Sheets["DETAILS"];
+const parseFile = async (file: Express.Multer.File): Promise<any> => {
+  try {
+    const workbook = xlsx.read(file.buffer, { type: "buffer" });
 
-      const rowsData = xlsx.utils.sheet_to_json(worksheet, {
-        defval: null,
-      }) as any[];
+    const sheetPromises = sheetNames.map((sheetName) => {
+      return new Promise((resolve, reject) => {
+        const sheet = workbook.Sheets[sheetName];
+        if (!sheet) {
+          reject(new Error(`Sheet ${sheetName} not found`));
+          return;
+        }
 
-      // Filter rows to include only those that are not empty
-      // and have both ORDER_ID and SUB_TOTAL
-      const filteredRows = rowsData.filter((row) => {
-        // Check if the row is not completely empty
-        const isNotEmpty = Object.values(row).some((val) => val !== null);
+        const rowsData = xlsx.utils.sheet_to_json(sheet, {
+          defval: null,
+        }) as any[];
 
-        // Check if ORDER_ID and SUB_TOTAL are not null
-        const hasRequiredFields = row.ORDER_ID && row.SUB_TOTAL > 0;
+        const filteredRows = rowsData.filter((row) => {
+          const isNotEmpty = Object.values(row).some((val) => val !== null);
+          const hasRequiredFields =
+            sheetName === "DETAILS" ? row.ORDER_ID && row.SUB_TOTAL > 0 : true;
+          return isNotEmpty && hasRequiredFields;
+        });
 
-        return isNotEmpty && hasRequiredFields;
+        resolve({ [sheetName]: filteredRows });
       });
+    });
 
-      resolve({
-        rows: filteredRows,
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
+    const results = await Promise.all(sheetPromises);
+    return Object.assign({}, ...results);
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const parseXlsxToJson = async (
-  files: Express.Multer.File[]
-): Promise<any[]> => {
-  const promises = files.map(parseFile);
-  return await Promise.all(promises);
+  file: Express.Multer.File
+): Promise<any> => {
+  return parseFile(file);
 };
