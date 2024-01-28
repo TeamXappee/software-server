@@ -6,6 +6,7 @@ export type TFile = {
   client_id?: string;
   size: number;
   notes?: string;
+  sheets: string[];
 };
 interface IFile extends Document {
   fileName: string;
@@ -13,6 +14,7 @@ interface IFile extends Document {
   client_id?: string;
   size: number;
   notes?: string;
+  sheets: string[];
 }
 
 const fileSchema: Schema = new Schema({
@@ -21,6 +23,10 @@ const fileSchema: Schema = new Schema({
   client_id: { type: String, required: false },
   size: { type: String, required: true },
   notes: { type: String, required: false },
+  sheets: { type: Array, required: false },
 });
 
 export const File = mongoose.model<IFile>("File", fileSchema);
+
+
+

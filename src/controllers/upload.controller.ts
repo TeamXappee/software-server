@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { parseXlsxToJson } from "../helpers/upload.helper";
 import {
   fetchFilesByClientId,
   fetchfilesByUserEmail,
   saveNewFileData,
 } from "../services/upload.service";
 import { handleError } from "../utils/handleError";
+import { parseFileSec } from "../helpers/upload.helper";
 
 export async function uploadFiles(req: Request, res: Response) {
   try {
@@ -16,13 +16,10 @@ export async function uploadFiles(req: Request, res: Response) {
       return res.status(400).json({ message: "No files uploaded" });
     }
 
-    const results = await parseXlsxToJson(file);
-    await saveNewFileData(metadata, results["DETAILS"]); // this means I only wanna read the first file uploaded, I only allow one file to get uploaded at a time
-
-    console.log(results);
+    const results = await parseFileSec(file);
+    await saveNewFileData(metadata, results);
     res.status(200).json({
       message: "Files processed successfully.",
-      data: JSON.stringify(results),
     });
   } catch (error: any) {
     res.status(500).json({
