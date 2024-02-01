@@ -1,4 +1,4 @@
-import { TOrderDetails } from "../types";
+import { IPostcodes } from "../models/charges.modal";
 
 export const extractOrdersData = (orders: any) => {
   return orders.map((order: any) => ({
@@ -37,6 +37,7 @@ export const extractOrdersData = (orders: any) => {
       shipCountry: channelSale.shipCountry,
       trackingNumber: channelSale.trackingNumber,
       shipPostalCode: channelSale.shipPostalCode,
+      ofaPostCode: extractOfaPostCode(channelSale.shipPostalCode),
       shippingMethod: channelSale.shippingMethod,
       bundleskus: channelSale.bundleskus,
       height: channelSale.height,
@@ -79,3 +80,81 @@ export async function fetchOrdersForChannel(
   const data = (await response.json()) as any;
   return data.orders as any[];
 }
+
+const extractOfaPostCode = (postcode: string) => {
+  if (postcode?.includes(" ")) {
+    return postcode.split(" ")[0];
+  }
+  return postcode;
+};
+
+interface ProcessedOrderResult {
+  carrier: string;
+  postageCost: number;
+}
+
+export function processOrders(orders: any[], charges: any[]): any {
+  const weightGroups = [
+    100, 250, 500, 750, 1000, 2000, 3000, 5000, 10000, 15000, 17000, 30000,
+  ];
+  let errorOrderIds: string[] = [];
+  let carrierFeesMap: { [carrierName: string]: number } = {};
+
+  orders.forEach((order: any) => {
+    const weightGroup =
+      weightGroups.find((group) => order.totalWeight <= group) ||
+      weightGroups[weightGroups.length - 1];
+    const charge = charges.find((c) => c.carrier === order.carrierName);
+
+    if (!charge) {
+      errorOrderIds.push(order.id);
+      return;
+    }
+
+    let totalCost = 0;
+
+    const postcodeCharge = charge.postcodesList.find(
+      (pc:any) => pc.name === order.ofaPostcode
+    );
+    if (!postcodeCharge) {
+      errorOrderIds.push(order.id);
+      return;
+    }
+    totalCost += postcodeCharge.amount;
+
+    const shippingCharge = charge.charges.find(
+      (sc:any) => sc.service === order.shippingMethod
+    );
+    if (!shippingCharge || !shippingCharge.charges[weightGroup]) {
+      errorOrderIds.push(order.id);
+      return;
+    }
+    totalCost += shippingCharge.charges[weightGroup];
+
+    // Update the total fees for the carrier
+    if (carrierFeesMap[order.carrierName]) {
+      carrierFeesMap[order.carrierName] += totalCost;
+    } else {
+      carrierFeesMap[order.carrierName] = totalCost;
+    }
+  });
+
+  // Convert carrierFeesMap to an array of CarrierTotalFee
+  const carrierFees = Object.keys(carrierFeesMap).map((carrierName) => ({
+    carrierName,
+    totalFee: carrierFeesMap[carrierName],
+  }));
+
+  return { errorOrderIds, carrierFees };
+}
+
+// const shippingCharge = charge.charges.find(sc => sc.service === order.shippingMethod);
+//     if (shippingCharge && shippingCharge.charges[weightGroup]) {
+//       const shippingServiceFee = shippingCharge.charges[weightGroup];
+//       result.totalCost += shippingServiceFee;
+//     } else {
+//       result.missing_service = true;
+//     }
+
+//     processedOrders.push(result);
+//   });
