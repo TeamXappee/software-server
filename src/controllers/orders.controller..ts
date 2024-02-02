@@ -1,51 +1,29 @@
 import { Request, Response } from "express";
 import { storeImportedOrders } from "../services/orders.service";
-import { TOrderDetails } from "../types";
-import {
-  extractOrdersData,
-  fetchOrdersForChannel,
-  processOrders,
-} from "../helpers/orders.helper";
-import { retrieveAllCharges } from "../services/postcodes.service";
+import { checkImportingOrdersParams } from "../utils/order.utils";
+import { importOrders } from "../helpers/orders.helper";
+import { retrieveAllCarriers } from "../services/carrier.service";
+import { calculateInvoice } from "../helpers/invoice.helper";
+
 require("dotenv").config();
 
 export const importOrdersWithRange = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { from, to, channelIds, page, pagesize } = req.body;
-
-  if (!from || !to) {
-    res
-      .status(400)
-      .json({ message: "Didn't receive date ranges, It's required." });
-    return;
-  }
-
-  if (!channelIds || channelIds.length === 0) {
-    res
-      .status(400)
-      .json({ message: "Didn't receive channel_ids, It's required." });
-    return;
-  }
+  const { from, to, channelIds } = req.body;
+  checkImportingOrdersParams(from, to, channelIds, res);
 
   try {
-    // Fetch orders for each channel ID
-    const fetchPromises = channelIds.map((channelId: string) =>
-      fetchOrdersForChannel(from, to, channelId)
-    );
+    const { orders, error } = await importOrders(from, to, channelIds);
+    if (error) {
+      res.status(500).json({
+        message: "Something went wrong while fetching orders.",
+        error,
+      });
+    }
 
-    const ordersResults = await Promise.all(fetchPromises);
-
-    // Flatten the array of order arrays
-    const allOrders = ordersResults.flat();
-
-    // Store orders in database
-    const extractedOrdersData = extractOrdersData(allOrders);
-    const { addedOrders, duplicateCount } = await storeImportedOrders(
-      extractedOrdersData
-    );
-
+    const { addedOrders, duplicateCount } = await storeImportedOrders(orders);
     res.status(200).json({
       message: "Orders imported and stored successfully",
       orders: addedOrders,
@@ -61,42 +39,29 @@ export const importOrdersWithRange = async (
 
 export const calculateInvoices = async (req: Request, res: Response) => {
   const { from, to, channelIds } = req.body;
-  if (!from || !to) {
-    res
-      .status(400)
-      .json({ message: "Didn't receive date ranges, It's required." });
-    return;
-  }
-
-  if (!channelIds || channelIds.length === 0) {
-    res
-      .status(400)
-      .json({ message: "Didn't receive channel_ids, It's required." });
-    return;
-  }
+  checkImportingOrdersParams(from, to, channelIds, res);
 
   try {
-    // Fetch orders for each channel ID
-    const fetchPromises = channelIds.map((channelId: string) =>
-      fetchOrdersForChannel(from, to, channelId)
+    const { orders, error } = await importOrders(from, to, channelIds);
+    if (error) {
+      res.status(500).json({
+        message: "Something went wrong while importing orders.",
+        error,
+      });
+    }
+
+    const carriers = await retrieveAllCarriers();
+
+    const { carrierFeesMap, missedOrders } = await calculateInvoice(
+      orders,
+      carriers
     );
-
-    const ordersResults = await Promise.all(fetchPromises);
-
-    // Flatten the array of order arrays
-    const allOrders = ordersResults.flat();
-
-    // Store orders in database
-    const extractedOrdersData = extractOrdersData(allOrders);
-    const { addedOrders } = await storeImportedOrders(extractedOrdersData);
-
-    const charges = await retrieveAllCharges();
-
-    const result = processOrders(addedOrders.slice(20), charges);
-    res.status(200).json(result);
+    res
+      .status(200)
+      .json({ carrierFeesMap, errors: missedOrders.length, missedOrders });
   } catch (error: any) {
     res.status(500).json({
-      message: "Something went wrong while processing orders.",
+      message: "Something went wrong while calculating invoices.",
       error: error.message,
     });
   }
