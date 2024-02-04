@@ -25,7 +25,7 @@ export interface ICarrier extends Document {
 
 const carrierSchema: Schema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, unique: true},
     services: { type: Array, required: true },
   },
   { timestamps: true }

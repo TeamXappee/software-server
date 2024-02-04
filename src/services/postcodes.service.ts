@@ -6,5 +6,5 @@ export const retrievePostCode = async (
   service?: string
 ) => {
   if (service) return await PostCode.findOne({ carrier_id, name, service });
-  return await PostCode.findOne({ carrier_id, name });
+  return await PostCode.findOne({ carrier_id, name, service: { $exists: false } });
 };

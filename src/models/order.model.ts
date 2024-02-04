@@ -5,8 +5,8 @@ interface IOrder extends Document, TOrderDetails {}
 
 const orderSchema: Schema = new Schema(
   {
-    selroOrderId: { type: String, required: false },
-    id: { type: String, required: false },
+    selroOrderId: { type: String, required: false, unique: true  },
+    id: { type: String, required: false, unique: true },
     date: { type: Number, required: false },
 
     channel: { type: String, required: false },

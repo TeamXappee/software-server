@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { retrieveAllChannels } from "../services/channel.service";
 
 export const getAllChannels = async (req: Request, res: Response) => {
-  console.log("getAllChannels");
   try {
     const channels = await retrieveAllChannels();
     res.status(200).json(channels);

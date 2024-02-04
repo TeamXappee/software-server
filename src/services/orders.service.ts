@@ -1,3 +1,4 @@
+import { Item } from "../models/item.model";
 import { Order } from "../models/order.model";
 
 export const storeImportedOrders = async (orders: any[]) => {
@@ -36,3 +37,17 @@ export const storeImportedOrders = async (orders: any[]) => {
   };
 };
 
+export const updateOrders = async (orders: any) => {
+  orders.forEach(async (order: any) => {
+    const existingOrder = await Order.findOne({ id: order.id });
+    if (existingOrder) {
+      await Order.updateOne({ id: order.id }, order);
+    } else {
+      await new Order(order).save();
+    }
+  });
+};
+
+export const retrieveOrdersWithOrderId = async (ids: string[]) => {
+  return await Order.find({ id: { $in: ids } });
+};
