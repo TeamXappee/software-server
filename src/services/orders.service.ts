@@ -1,4 +1,3 @@
-import { Item } from "../models/item.model";
 import { Order } from "../models/order.model";
 
 export const storeImportedOrders = async (orders: any[]) => {

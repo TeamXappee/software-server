@@ -11,14 +11,19 @@ export const retrieveAllItems = async (page: number, pageSize: number) => {
     .limit(pageSize);
 };
 
+export const retrieveMissingItemWeight = async (sku: string) => {
+  const item = await Item.findOne({ sku: sku });
+  if (item && item.weight > 0) {
+    return item.weight;
+  } else {
+    return 0;
+  }
+};
 export const retrieveMissingOrderWeight = async (order: any) => {
+  if (order.totalWeight > 0) return order.totalWeight;
+
   const weightPromises = order.channelSales.map(async (sale: any) => {
-    const item = await Item.findOne({ sku: sale.sku });
-    if (item && item.weight > 0) {
-      return item.weight;
-    } else {
-      return 0;
-    }
+    return await retrieveMissingItemWeight(sale.sku);
   });
   const weights = await Promise.all(weightPromises);
   return weights.reduce((acc, weight) => acc + weight, 0);

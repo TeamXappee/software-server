@@ -78,10 +78,11 @@ export const fixMissingWeight = async (req: Request, res: Response) => {
   const { ids } = req.body;
 
   try {
-    const orders = await retrieveOrdersWithOrderId(ids);
-    const fixedOrdersPromises = orders.map(async (order) => {
+    const orders = (await retrieveOrdersWithOrderId(ids)) as any[];
+
+    const fixedOrdersPromises = orders.map(async (order: any) => {
       const totalWeight = await retrieveMissingOrderWeight(order);
-      return { ...order.toObject(), totalWeight }; // Assuming Mongoose documents, use toObject() to modify them
+      return { ...order.toObject(), totalWeight };
     });
 
     const fixedOrders = await Promise.all(fixedOrdersPromises);
@@ -92,10 +93,8 @@ export const fixMissingWeight = async (req: Request, res: Response) => {
 
     res.status(200).json({ updatedOrders });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
+    res.status(500).json({
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };

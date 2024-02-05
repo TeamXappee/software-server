@@ -1,11 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { TOrderDetails } from "../types";
 
-interface IOrder extends Document, TOrderDetails {}
+interface IOrder extends Document{}
 
 const orderSchema: Schema = new Schema(
   {
-    selroOrderId: { type: String, required: false, unique: true  },
+    selroOrderId: { type: String, required: false, unique: true },
     id: { type: String, required: false, unique: true },
     date: { type: Number, required: false },
 
