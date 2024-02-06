@@ -5,6 +5,11 @@ export const storeItems = async (items: any) => {
   return await Item.insertMany(items);
 };
 
+export const storeOneItem = async (item: any) => {
+  const newItem = new Item(item);
+  return await newItem.save();
+};
+
 export const retrieveAllItems = async (page: number, pageSize: number) => {
   return await Item.find()
     .skip(pageSize * (page - 1))

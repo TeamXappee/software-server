@@ -1,5 +1,10 @@
 import { Request, Response } from "express";
-import { storeItems, retrieveAllItems } from "../services/items.service";
+import {
+  storeItems,
+  retrieveAllItems,
+  storeOneItem,
+} from "../services/items.service";
+
 export const addNewItems = async (req: Request, res: Response) => {
   const { newItems } = req.body;
 
@@ -15,6 +20,19 @@ export const addNewItems = async (req: Request, res: Response) => {
   }
 };
 
+export const addOneItem = async (req: Request, res: Response) => {
+  const { newItem } = req.body;
+  if (!newItem) {
+    res.status(400).json({ message: "No new items provided" });
+  }
+  // Add new items to the database
+  try {
+    const item = await storeOneItem(newItem);
+    res.status(201).json({ message: "Item added successfully", item });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+};
 export const getAllItems = async (req: Request, res: Response) => {
   try {
     const { page, pageSize } = req.query;

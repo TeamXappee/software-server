@@ -5,7 +5,7 @@ import itemsRouter from "./items.router";
 import carrierRouter from "./carrier.route";
 const router = express.Router();
 
-router.get("/check-health", (req, res) => {
+router.get("/check-health", async (req, res) => {
   res.status(200).json({ message: "Server is up and running" });
 });
 

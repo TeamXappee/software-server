@@ -9,6 +9,8 @@ import { checkImportingOrdersParams } from "../utils/order.utils";
 import { importOrders } from "../helpers/orders.helper";
 import { retrieveAllCarriers } from "../services/carrier.service";
 import { calculateInvoice } from "../helpers/invoice.helper";
+import { retrieveAllFees } from "../services/fees.service";
+import { IFee } from "../models/fees.model";
 
 require("dotenv").config();
 
@@ -65,6 +67,9 @@ export const calculateInvoices = async (req: Request, res: Response) => {
       invoiceByOrder,
       errors: missedOrders.length,
       missedOrders,
+      from,
+      to,
+      channelIds,
     });
   } catch (error: any) {
     res.status(500).json({

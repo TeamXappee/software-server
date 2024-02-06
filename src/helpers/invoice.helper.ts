@@ -28,7 +28,7 @@ const getOrderWeightGroup = (totalWeight?: number) =>
     : undefined;
 
 export const handleWeightGroup = async (order: any) => {
-  let weight = order.totalWeight;
+  let weight = order.totalWeight * 1000;
   if (!weight) {
     weight = await retrieveMissingOrderWeight(order);
   }
@@ -47,7 +47,8 @@ export const calculateInvoice = async (
       return false;
     }
   });
-  const carrierFeesMap: Record<string, number> = {};
+  const carrierFeesMap: Record<string, { postage: number; handeling: number }> =
+    {};
   const invoiceByOrder: Record<string, number> = {};
 
   const missedOrders: { id: string; reasons: string[] }[] = [];
@@ -62,6 +63,8 @@ export const calculateInvoice = async (
   };
 
   for (const order of orders) {
+    console.log(order.id, order.shippingMethod, order.carrierName);
+
     const carrier = carriers.find((c) => c.name === order.carrierName);
     if (!carrier) {
       addMissedOrder(order.id, `Carrier mismatch * ${order.carrierName}`);
@@ -93,19 +96,23 @@ export const calculateInvoice = async (
 
     if (!postcode) {
       //   addMissedOrder(order.id, `Postcode mismatch ${ofaPostcode}`);
-      carrierFeesMap[service.name] =
-        (carrierFeesMap[service.name] || 0) + Number(charge);
+      carrierFeesMap[service.name].postage =
+        (carrierFeesMap[service.name].postage || 0) + Number(charge);
 
       invoiceByOrder[order.id] =
         (invoiceByOrder[order.id] || 0) + Number(charge);
-
+      
       continue;
     }
 
     const sum = Math.ceil(Number(charge) + Number(postcode.amount));
 
-    carrierFeesMap[service.name] = (carrierFeesMap[service.name] || 0) + sum;
-    invoiceByOrder[order.id] = (carrierFeesMap[order.id] || 0) + sum;
+    carrierFeesMap[service.name].postage =
+      (carrierFeesMap[service.name].postage || 0) + sum;
+    invoiceByOrder[order.id] = (carrierFeesMap[order.id].postage || 0) + sum;
+    console.log(
+      `${order.id} - ${service.name} - ${charge}, ${order.totalWeight}, wg ${weightGroup}`
+    );
   }
 
   return { carrierFeesMap, missedOrders, invoiceByOrder };
