@@ -1,4 +1,5 @@
 import { Order } from "../models/order.model";
+import { Trash } from "../models/trash.model";
 
 export const storeImportedOrders = async (orders: any[]) => {
   const operations = orders.map((order) => {
@@ -49,4 +50,17 @@ export const updateOrders = async (orders: any) => {
 
 export const retrieveOrdersWithOrderId = async (ids: string[]) => {
   return await Order.find({ id: { $in: ids } });
+};
+
+export const deleteOrder = async (_id: string) => {
+  return await Order.deleteOne({ _id });
+};
+
+export const retrieveAllSoftDeletedOrders = async () => {
+  return await Trash.find();
+};
+
+export const storeNewOrder = async (order: any) => {
+  const newOrder = new Order({ ...order, _id: undefined })
+  return await new Order(newOrder).save();
 };

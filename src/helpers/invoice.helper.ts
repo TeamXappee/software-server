@@ -117,15 +117,3 @@ export const calculateInvoice = async (
 
   return { carrierFeesMap, missedOrders, invoiceByOrder };
 };
-
-const generateCsvFromSkus = (sales: any) => {
-  // Start with a CSV header
-  let csvString = "";
-
-  // Append each SKU to the CSV string
-  sales.forEach((sale: any) => {
-    csvString += `${sale.sku}, `;
-  });
-
-  return csvString;
-};
