@@ -11,7 +11,10 @@ import {
 import { checkImportingOrdersParams } from "../utils/order.utils";
 import { importOrders } from "../helpers/orders.helper";
 import { retrieveAllCarriers } from "../services/carrier.service";
-import { calculateInvoice } from "../helpers/invoice.helper";
+import {
+  calculateInvoice,
+  calculateInvoiceByOrder,
+} from "../helpers/invoice.helper";
 import { IFee } from "../models/fees.model";
 import {
   deleteOrderFromTrashAndRestore,
@@ -65,14 +68,13 @@ export const calculateInvoices = async (req: Request, res: Response) => {
 
     const carriers = await retrieveAllCarriers();
 
-    const { carrierFeesMap, missedOrders, invoiceByOrder } =
-      await calculateInvoice(orders, carriers);
+    const invoiceByOrder = await calculateInvoiceByOrder(orders, carriers);
+
+    const invoice = await calculateInvoice(invoiceByOrder);
 
     res.status(200).json({
-      carrierFeesMap,
+      invoice,
       invoiceByOrder,
-      errors: missedOrders.length,
-      missedOrders,
       from,
       to,
       channelIds,
